@@ -1,0 +1,27 @@
+#!/bin/bash
+
+sudo service go-agent stop
+
+aws s3 cp s3://<S3 Bucket where the file is hosted>/ConfigureGoAgent.py /home/ubuntu/.
+aws s3 cp s3://<S3 Bucket where the file is hosted>/RedeployApp.py /home/ubuntu/.
+
+cd /home/ubuntu
+python ConfigureGoAgent.py -s<Use Go CD URL> -k<use go cd auto regISTER KEY> -rv -a<Appcode> -e<EnvCode>
+
+sudo cp -f /home/ubuntu/go-agent /etc/default/go-agent
+sudo chown root:go /etc/default/go-agent
+sudo chmod 640 /etc/default/go-agent
+
+sudo mkdir /var/lib/go-agent/config
+
+sudo cp autoregister.properties /var/lib/go-agent/config/.
+sudo chown go:go /var/lib/go-agent/config
+sudo chmod 750 /var/lib/go-agent/config
+
+sudo chmod 644 /var/lib/go-agent/config/autoregister.properties
+
+sudo service go-agent restart
+
+sleep 1m
+
+python RedeployApp.py -pSignAtApp -sDEV
